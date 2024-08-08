@@ -36,7 +36,7 @@ struct ContentView: View {
                 VStack {
                     VStack{
                         Text(date,format:.dateTime.hour(.defaultDigits(amPM: .omitted)).minute().second()).font(.system(size: 60, weight: .ultraLight, design: .default)).colorInvert()
-                        Text(date, format:.dateTime.timeZone().day().month() ).font(.system(size: 18, weight: .regular, design: .default)).colorInvert()
+                        Text(date, format:.dateTime.timeZone().day().month(.narrow)).font(.system(size: 18, weight: .regular, design: .default)).colorInvert()
                     }.padding(.vertical,50)
                     ZStack {
                         Circle()
@@ -254,7 +254,9 @@ struct ContentView: View {
 func toInt(cas:Int, date:Date) -> Int{
     // Create Date Formatter
     let dateFormatter = DateFormatter()
+    dateFormatter.dateStyle = .medium
 
+    
     // Set Date Format
     dateFormatter.dateFormat = "HH:mm:ss"
 
@@ -262,25 +264,22 @@ func toInt(cas:Int, date:Date) -> Int{
     // Convert Date to String
     timez = dateFormatter.string(from: date)
 
-    let components = timez.split{ $0 == ":" }.map{ (x) -> Int in return Int(String(x))! }
-    var o = 0
-    
-    switch cas{
-    case 0:
-       o = components[0]
-    case 1:
-       o = components[1]
-    case 2:
-       o = components[2]
-    default:
-       o = 0
-    }
-    
-    if o == 12{
-        o=0
-    }
-    
-    return o
+    let components = timez.split(separator: ":").compactMap { Int($0) }
+        
+        // Ensure we have the correct number of components
+        guard components.count > cas else {
+            return 0 // Return a default value if the component does not exist
+        }
+        
+        // Get the desired component based on the case
+        var o = components[cas]
+        
+        // Special handling for the value 12
+        if o == 12 {
+            o = 0
+        }
+        
+        return o
 }
 
 struct ContentView_Previews: PreviewProvider {
